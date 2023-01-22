@@ -7,16 +7,14 @@ def createGrid(_x,_y,grid_square_size,screen):
     array = []
     for x in range(_x): 
         
-        grid_y = np.zeros(64)
-        
-        array.append(grid_y)
-        # for y in range(_y): 
-            # rect = pygame.Rect(x*grid_square_size,y*grid_square_size,grid_square_size,grid_square_size)
-            # pygame.draw.rect(screen, (200, 204, 201), rect,1)
+        grid_y = np.zeros(int(_y))
 
-    
-        
-    # print(y*x)
+        array.append(grid_y)
+
+        for y in range(_y): 
+            rect = pygame.Rect(x*grid_square_size,y*grid_square_size,grid_square_size,grid_square_size)
+            pygame.draw.rect(screen, (200, 204, 201), rect,1)
+
 
     pygame.display.update()
     return array

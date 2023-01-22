@@ -15,14 +15,19 @@ from Grid import *
 from Connection_String import * 
 
 # Public variables
-grid_square_size = 10
+grid_square_size = 5
 grid = []
 birth_cell_cell = 0
+
+# GRID SETTINGS 
+x_axis = 128
+y_axis = 128 
 
 
 # Settings
 # __start_cells = 100
 __time = 10
+# This VARIABLE IS BEING USED DON"T REMOVE IT 
 _Cell__default_gene_length = 2
 
 logname = "TICK.log"
@@ -454,8 +459,8 @@ class Cell:
                 
                 grid[int(self.x)][int(self.y)] = 0
 
-                self.rect.move_ip(0,1 * -10)
-                self.y = (self.rect.y / 10) 
+                self.rect.move_ip(0,1 * - grid_square_size)
+                self.y = (self.rect.y / grid_square_size) 
 
                 
 
@@ -463,7 +468,7 @@ class Cell:
                 # Moving Right
                 
 
-                if(self.x == 63):
+                if(self.x == (x_axis - 1)):
                     return
                     
                 if(grid[int(self.x + 1)][int(self.y)] > 0):
@@ -471,8 +476,8 @@ class Cell:
 
                 grid[int(self.x)][int(self.y)] = 0
 
-                self.rect.move_ip(1 * 10,0)
-                self.x = (self.rect.x / 10) 
+                self.rect.move_ip(1 * grid_square_size,0)
+                self.x = (self.rect.x / grid_square_size) 
 
                
                 
@@ -480,7 +485,7 @@ class Cell:
 
             case 3: 
                 # Moving Down
-                if(self.y == 63):
+                if(self.y == (y_axis - 1)):
                     return
 
            
@@ -489,8 +494,8 @@ class Cell:
 
                 grid[int(self.x)][int(self.y)] = 0
 
-                self.rect.move_ip(0,1 * 10)
-                self.y = (self.rect.y / 10) 
+                self.rect.move_ip(0,1 * grid_square_size)
+                self.y = (self.rect.y / grid_square_size) 
                 
             case 4: 
                 # Moving Left
@@ -504,8 +509,8 @@ class Cell:
 
                 grid[int(self.x)][int(self.y)] = 0  
                 
-                self.rect.move_ip(1 * -10,0)
-                self.x = (self.rect.x / 10) 
+                self.rect.move_ip(1 * -grid_square_size,0)
+                self.x = (self.rect.x / grid_square_size) 
 
                 
 
@@ -520,8 +525,8 @@ class Cell:
         # If is taken 
         if(grid[self.x][self.y] > 0 ):
 
-            self.x = randint(0,63)
-            self.y = randint(0,63)
+            self.x = randint(0,(x_axis - 1))
+            self.y = randint(0,(y_axis - 1))
             # self.x  = 5
 
             self.birth_cell()
@@ -543,21 +548,21 @@ class Cell:
 
     # Return: How much cell is close to south border => 0 to +1
     def neuro_sensory_south_border(self):
-        return clamp(self.y / 63,0,1)
+        return clamp(self.y / (y_axis - 1),0,1)
 
     # Return: How much cell is close to north border => 0 to +1
     def neuro_sensory_north_border(self):
-        _y = 63 - self.y
-        return clamp(_y / 63,0,1)
+        _y = (y_axis - 1) - self.y
+        return clamp(_y / (y_axis - 1),0,1)
 
     # Return: How much cell is close to east border => 0 to +1
     def neuro_sensory_east_border(self):
-        return clamp(self.x / 63,0,1)
+        return clamp(self.x / (x_axis - 1),0,1)
 
     # Return: How much cell is close to west border => 0 to +1
     def neuro_sensory_west_border(self):
-        _x = 63 - self.x
-        return clamp(_x / 63,0,1)
+        _x = (x_axis - 1) - self.x
+        return clamp(_x / (x_axis - 1),0,1)
 
     # Return: Positive signal per oscillator frequency
     def neuro_sensory_oscillator(self):
@@ -640,16 +645,14 @@ def clamp(n, smallest, largest):
 pygame.init()
 
 # Set the screen size
-screen = pygame.display.set_mode((1000, 700))
+screen = pygame.display.set_mode((700, 800))
 # screen = pygame.display.set_mode((200, 700))
 
 screen.fill("white")
 # Font for text
 myfont = pygame.font.SysFont(None, 20)
 
-# Create GRID 
-x_axis = 64
-y_axis = 64 
+
 grid = createGrid(x_axis,y_axis,grid_square_size,screen)
 # BG for updation 
 bg = pygame.Surface((grid_square_size,grid_square_size))
@@ -684,8 +687,8 @@ def init(start_cells, generation_alive_time ):
     gave_birth = 0
     for x in range(start_cells):
 
-        selected_x = randint(0,63)
-        selected_y = randint(0,63)
+        selected_x = randint(0,(x_axis - 1))
+        selected_y = randint(0,(y_axis - 1))
         # logging.info("Creating Cell")
         cell = Cell(selected_x,selected_y,generation_alive_time)
         # logging.info("Cell Created")
@@ -735,7 +738,8 @@ def init(start_cells, generation_alive_time ):
 
             # logging.critical("CELL => "+ str(i))
             i += 1
-            cell.tick()
+            # cell.tick()
+            cell.move(4)
 
         
         
