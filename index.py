@@ -21,17 +21,17 @@ birth_cell_cell = 0
 
 
 # Settings
-__start_cells = 2000
+# __start_cells = 100
 __time = 10
 _Cell__default_gene_length = 2
 
-logname = "DEBUGGING.log"
+logname = "TICK.log"
 
 logging.basicConfig(filename=logname,
                     filemode='w',
                     format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%H:%M:%S',
-                    level=logging.DEBUG)
+                    level= logging.DEBUG)
 
 # o = 0
 
@@ -101,7 +101,7 @@ class Gene:
             # 4150863785
             number = randint(10**7,10**8-1)
 
-            logging.info("GENE:"+ str(number))
+            # logging.info("GENE:"+ str(number))
             
             
 
@@ -114,7 +114,7 @@ class Gene:
 
 
 
-            logging.info(str(chunks))
+            # logging.info(str(chunks))
             # Working on one gene creating neuron 
             # [22,49,18,50]
 
@@ -126,12 +126,12 @@ class Gene:
 
             #Sensory Neuron
             current_sensory = Sensoryneuron(self.percentage_index_selection(chunks[0],len_Sen_neurons),cell)
-            logging.info(current_sensory.returnName())
+            # logging.info(current_sensory.returnName())
             self.sensory_neurons.append(current_sensory)
 
             # Motor Neuron
             current_motor = MotorNeuron(self.percentage_index_selection(chunks[1],len_Moto_neurons),cell)
-            logging.info(current_motor.returnName())
+            # logging.info(current_motor.returnName())
             self.motor_neurons.append(current_motor)
         
             # connection_config = [1,8]
@@ -147,7 +147,7 @@ class Gene:
                 # Connection (Inhibitory) Negative
                 output_connection = ConnectionString(-1,chunks[2])
             
-                logging.debug("Connection OUTPUT: Connection (Inhibitory) Negative (Strength -"+str(chunks[2])+")")
+                # logging.debug("Connection OUTPUT: Connection (Inhibitory) Negative (Strength -"+str(chunks[2])+")")
 
             else:
             
@@ -155,7 +155,7 @@ class Gene:
                 # Connection (Inhibitory) Positive
                 output_connection = ConnectionString(1,chunks[2])
 
-                logging.debug("Connection OUTPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[2])+")")
+                # logging.debug("Connection OUTPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[2])+")")
 
 
             # if connection_config[1] % 2 == 0:
@@ -163,18 +163,18 @@ class Gene:
             #     # Connection (Inhibitory) Negative
             #     input_connection = ConnectionString(-1,chunks[3])
                 
-            #     logging.debug("Connection INPUT: Connection (Inhibitory) Negative (Strength -"+str(chunks[3])+")")
+            #     # logging.debug("Connection INPUT: Connection (Inhibitory) Negative (Strength -"+str(chunks[3])+")")
 
             # else:
             #     # Odd
             #     # Connection (Inhibitory) Positive
             #     input_connection = ConnectionString(1,chunks[3])
 
-            #     logging.debug("Connection INPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[3])+")")
+            #     # logging.debug("Connection INPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[3])+")")
 
 
             input_connection = ConnectionString(1,chunks[3])
-            logging.debug("Connection INPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[3])+")")
+            # logging.debug("Connection INPUT: Connection (Exicitedory) Positive (Strength +"+str(chunks[3])+")")
 
             self.brain_input_connections.append(input_connection) 
             
@@ -185,36 +185,36 @@ class Gene:
                 # Connect Directly To Sensory To Motor
                 self.inter_neurons.append([Interneuron(current_sensory,current_motor,0,input_connection,output_connection),0])
                 
-                logging.debug("Connect Directly To Sensory To Motor")
+                # logging.debug("Connect Directly To Sensory To Motor")
                 
             else:
                 if connection_config[0] >= connection_config[1]:
                     # Create New Neuron Has Mulutplier
                     self.inter_neurons.append([Interneuron(current_sensory,current_motor,1,input_connection,output_connection),1])
                     self.brain_output_connections.append(output_connection) 
-                    logging.debug("Create New Interneuron")
+                    # logging.debug("Create New Interneuron")
 
                 else:
                     # Connect To Existing One
                     len_in_neu = len(self.inter_neurons)
                     if len_in_neu > 0:
-                        logging.debug("Connection To Exisiting Neuron")
+                        # logging.debug("Connection To Exisiting Neuron")
                         Ineuron = self.inter_neurons[self.percentage_index_selection(chunks[2],len_in_neu)]
 
                         # Checking if the neuron is just a transmitter or have some strength
                         if Ineuron[1] == 0: 
                             # Selected Neuron is just transmitter can't be connected 
 
-                            logging.debug("Create New I-Neuron Cause Selected Interneuron Is Transmitter")
+                            # logging.debug("Create New I-Neuron Cause Selected Interneuron Is Transmitter")
                             self.inter_neurons.append([Interneuron(current_sensory,current_motor,1,input_connection,output_connection),1])
                             self.brain_output_connections.append(output_connection) 
 
                         else:
                             Ineuron[0].addInput(current_sensory,input_connection)
-                            logging.debug("Connected To Exisiting Neuron"+ str(Ineuron))
+                            # logging.debug("Connected To Exisiting Neuron"+ str(Ineuron))
                     else:
                         # No existing Neurons
-                        logging.debug("Create New I-Neuron Cause There is no another")
+                        # logging.debug("Create New I-Neuron Cause There is no another")
                         self.inter_neurons.append([Interneuron(current_sensory,current_motor,1,input_connection,output_connection),1])
                         self.brain_output_connections.append(output_connection) 
 
@@ -240,21 +240,19 @@ class Gene:
         
 
     def tick(self):
-        
-
+        # logging.critical("GENE TICK")
+        i = 0
         for x in self.inter_neurons:
+            # logging.critical("CALLING INTER-NEURON => "+str(i) + "TICK")
             x[0].process()
+            # logging.critical("ENDED INTER-NEURON => "+str(i) + "TICK")
+            i += 1
+            
         
 
     def percentage_index_selection(self, percentage, array_len):
         # calculate the index using the given percentage
         return int(percentage * array_len / 100)
-
-
-
-    
-
-        
 
 class Sensoryneuron:
 
@@ -289,9 +287,6 @@ class Sensoryneuron:
     def giveInput(self):
         method = getattr(self._current_cell,self.method_string)
         return method()
-
-
-
 
 class MotorNeuron:
 
@@ -329,7 +324,6 @@ class MotorNeuron:
         
         return method(str(_flag))
 
-
 class Interneuron:
     
     input_neurons = []
@@ -344,12 +338,21 @@ class Interneuron:
     # If this is none than just work as a transfer
     output_connection_string = None
 
-    def __init__(self,sensory_neurons,motor_neuron,type,input_connection_string,output_connection_string):
+    def __init__(self,sensory_neurons,motor_neuron,type,_input_connection_string,output_connection_string):
+
+        self.input_connection_string = []
+        self.input_neurons           = []
+
         self.input_neurons.append(sensory_neurons)
         self.output_neuron = motor_neuron
         self.connection_type = type
+
+        self.input_connection_string = []
         
-        self.input_connection_string.append(input_connection_string)
+        self.input_connection_string.append(_input_connection_string)
+
+        # print(self.input_connection_string)
+
         if type == 1:
             self.output_connection_string = output_connection_string
 
@@ -385,10 +388,6 @@ class Interneuron:
                         self.output_neuron.do_action(output)
 
                 index += 1
-                # print(output)
-                # return S_neuron.giveInput()
-
-
         
 class Cell:
     x = 0
@@ -420,7 +419,9 @@ class Cell:
         self.rect = pygame.Rect(self.x*grid_square_size,self.y*grid_square_size,grid_square_size,grid_square_size)
     
     def tick(self):
+        # logging.critical("CELL GENE TICK STARTED")
         self.gene.tick()
+        # logging.critical("CELL GENE TICK ENDED")
 
 
     def draw_cell(self):
@@ -432,7 +433,8 @@ class Cell:
       
         
         pygame.draw.rect(screen,self.color, self.rect,0)
-        pygame.display.update()
+        # pygame.display.update()
+        # pygame.display.flip()
         
     def move(self, flag ):
 
@@ -620,27 +622,6 @@ class Cell:
 
 
 
-        
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-   
-
 def log(title = "", param = ""):
     if(title != ""):
         print("==================="+ title +"===================")
@@ -698,16 +679,16 @@ _time = 0
 
 def init(start_cells, generation_alive_time ):
 
-    logging.info("Initalizing")
+    # logging.info("Initalizing")
 
     gave_birth = 0
     for x in range(start_cells):
 
         selected_x = randint(0,63)
         selected_y = randint(0,63)
-        logging.info("Creating Cell")
+        # logging.info("Creating Cell")
         cell = Cell(selected_x,selected_y,generation_alive_time)
-        logging.info("Cell Created")
+        # logging.info("Cell Created")
 
         
         
@@ -716,7 +697,8 @@ def init(start_cells, generation_alive_time ):
             cell.draw_cell()
             gave_birth = gave_birth + 1 
 
-    pygame.display.update()
+    # pygame.display.update()
+
 
     label = myfont.render("Total Cells: "+ str(gave_birth), 1, (0,0,0))
 
@@ -732,18 +714,29 @@ def init(start_cells, generation_alive_time ):
     while run:
         pygame.event.get()
 
-        _time += clock.tick(1)
+        _time += clock.tick(10)
         
         # for e in pygame.event.get():
         #     if e.type == pygame.QUIT:
         #         run = False
         # 8 ticks per second
+
+        
         if((_time / (generation_alive_time * 100)) > generation_alive_time):
             run = False
         # print(_time / 800)
         
 
-        tick()
+        
+        # TICK
+        # logging.critical("Tick Start")
+        i = 0
+        for cell in cells: 
+
+            # logging.critical("CELL => "+ str(i))
+            i += 1
+            cell.tick()
+
         
         
         
@@ -767,10 +760,9 @@ def init(start_cells, generation_alive_time ):
 
 
 
-def tick():
+
     
-    for cell in cells: 
-        cell.tick()
+    
     
 
 
@@ -783,6 +775,7 @@ def tick():
 # Param 2 : Alive Time : Generation Lifetime in Seconds  -- TICKS = seconds * 8 
 
 
+__start_cells = 10
 
 init(__start_cells,__time)
 
