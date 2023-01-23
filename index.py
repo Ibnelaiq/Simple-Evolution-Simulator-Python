@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import struct 
 import logging 
+import json
 
 
 
@@ -17,6 +18,10 @@ from Connection_String import *
 # Public variables
 grid_square_size = 5
 grid = []
+
+phermones = {}
+phermones[("a","a")] = "test"
+
 birth_cell_cell = 0
 
 # GRID SETTINGS 
@@ -26,9 +31,9 @@ y_axis = 128
 
 # Settings
 # __start_cells = 100
-__time = 10
+# __time = 10
 # This VARIABLE IS BEING USED DON"T REMOVE IT 
-_Cell__default_gene_length = 2
+# _Cell__default_gene_length = 10
 
 logname = "TICK.log"
 
@@ -57,10 +62,9 @@ sensory_neurons_array_string = [
     ["LENGTH-WEST-BORDER","neuro_sensory_west_border"],
     ["OSCILLATOR","neuro_sensory_oscillator"]
 ]
-
 len_Sen_neurons = len(sensory_neurons_array)
 
-motor_neurons_array = ["ML","MR","MU","MD","MRnd","MAx","MAy"]
+motor_neurons_array = ["ML","MR","MU","MD","MRnd","SOsc","MAx","MAy"]
 # ,"SOsc"
 motor_neurons_array_string = [
     ["MOVE-LEFT","neuro_motor_left"],
@@ -68,24 +72,21 @@ motor_neurons_array_string = [
     ["MOVE-UP","neuro_motor_up"],
     ["MOVE-DOWN","neuro_motor_down"],
     ["MOVE-RANDOM","neuro_motor_random_move"],
-    
+    ["SET-OSCILLATOR","neuro_set_oscialltor_period"],
     ["MOVE-X-AXIS","neuro_motor_moveX"],
     ["MOVE-Y-AXIS","neuro_motor_moveY"]
 ]
-
-# ["SET-OSCILLATOR","neuro_set_oscialltor_period"],
+# 
 
 len_Moto_neurons = len(motor_neurons_array)
-
-
-
 
 class Gene: 
 
     gene_length = 0
     _current_cell = None
+    color = ""
 
-    def __init__(self,cell,_gene_length):
+    def __init__(self,cell,_gene_length,generated_gene):
 
         
 
@@ -98,26 +99,29 @@ class Gene:
         
         self.brain_input_connections = []
         self.brain_output_connections = []
+
+        self.gene_chunks = []
         
-        print("           Creating Genes               ")
-        print("========================================")
+        # print("           Creating Genes               ")
+        # print("========================================")
 
         for i in range(0, _gene_length):
             # 4150863785
-            number = randint(10**7,10**8-1)
+            if generated_gene == None:
 
-            # logging.info("GENE:"+ str(number))
-            
-            
+                number = randint(10**7,10**8-1)
 
-            
-            # Dividing GENE into digtis
-            chunks = []
-            for i in range(4):
-                number, remainder = divmod(number, 100)
-                chunks.append(remainder)
+                chunks = []
+                for i in range(4):
+                    number, remainder = divmod(number, 100)
+                    chunks.append(remainder)           
+
+            else:
+                
+                chunks = generated_gene[i]
 
 
+            self.gene_chunks.append(chunks)
 
             # logging.info(str(chunks))
             # Working on one gene creating neuron 
@@ -126,7 +130,13 @@ class Gene:
             # Index 0 [22] => Sensory Nueron => Input
             # Index 1 [49] => Motor Nueron => Output
             # Index 2 [18] => InterNeuron => Central
+            # Index 3 [18] =>  FOR CONDITION OF CONNECTIONS
 
+            
+
+         
+
+    
 
 
             #Sensory Neuron
@@ -223,26 +233,62 @@ class Gene:
                         self.inter_neurons.append([Interneuron(current_sensory,current_motor,1,input_connection,output_connection),1])
                         self.brain_output_connections.append(output_connection) 
 
-
-        log("=================== CELL BRAIN STATS ================")
-
-        log("","Motor Neurons: "+str(len(self.motor_neurons)))
         
-        log("","Sensory Neurons: "+str(len(self.sensory_neurons)))
+      
 
-        interneuron_count = 0
+        # log("=================== CELL BRAIN STATS ================")
 
-        for x in self.inter_neurons:
-            if(x[1] == 1):
-                interneuron_count += 1
+        # log("","Motor Neurons: "+str(len(self.motor_neurons)))
         
-        log("","Inter Neurons: "+str(interneuron_count))
+        # log("","Sensory Neurons: "+str(len(self.sensory_neurons)))
 
-        log("","Brain INPUT Connections: "+str(len(self.brain_input_connections)))
+        # interneuron_count = 0
 
-        log("","Brain OUTPUT Connections: "+str(len(self.brain_output_connections)))
+        # for x in self.inter_neurons:
+        #     if(x[1] == 1):
+        #         interneuron_count += 1
+        
+        # log("","Inter Neurons: "+str(interneuron_count))
+
+        # log("","Brain INPUT Connections: "+str(len(self.brain_input_connections)))
+
+        # log("","Brain OUTPUT Connections: "+str(len(self.brain_output_connections)))
 
         
+    
+    def gene_color(self):
+        return self.numbers_to_rgb(self.gene_chunks)
+
+
+
+    def numbers_to_rgb(self,chunks ):
+        # Initialize variables
+        r, g, b = 0, 0, 0
+        # Iterate through the list of numbers
+        for num in chunks:
+            
+            # Add the values to the r, g, and b variables
+            r += int(num[0])
+            g += int(num[1])
+            b += int((num[2] + num[3]) / 2)
+
+        # Divide by n to get the average values
+        r = r // _Cell__default_gene_length
+        g = g // _Cell__default_gene_length
+        b = b // _Cell__default_gene_length
+
+        r -= 20
+        g += 50
+        # b += b_brightness_value
+
+        r = min(255, max(0, r))
+        g = min(255, max(0, g))
+        b = min(255, max(0, b)) 
+
+        # Return the RGB color as a tuple
+        return (r, g, b)
+        
+    
 
     def tick(self):
         # logging.critical("GENE TICK")
@@ -282,7 +328,7 @@ class Sensoryneuron:
         self._current_cell = cell
 
         
-        print(self.type_string)
+        # print(self.type_string)
 
     # Return Name For Debugging
     def returnName(self):
@@ -320,7 +366,7 @@ class MotorNeuron:
         
         _flag = 1
         
-        if self.method_string == "neuro_motor_moveX" or self.method_string == "neuro_motor_moveY": 
+        if self.method_string == "neuro_motor_moveX" or self.method_string == "neuro_motor_moveY" or self.method_string == "neuro_set_oscialltor_period": 
             if flag <= 0.5:
                 _flag = -1
             
@@ -374,25 +420,29 @@ class Interneuron:
     def process(self):
         
         index = 0 
+        output = 0
         for S_neuron in self.input_neurons:
 
             input_connection = self.input_connection_string[index]
 
             # Get Strength Input 
             # Input from Cell * Strength Of Input Connection
-            output = input_connection.calculateInput(S_neuron.giveInput())
             
-            if random() <= output:
-                # Direct To Motor
-                if(self.output_connection_string == None):
+            output += input_connection.calculateInput(S_neuron.giveInput())
+            index += 1
+            
+        if random() <= output:
+            # Direct To Motor
+            if(self.output_connection_string == None):
+                self.output_neuron.do_action(output)
+            else: 
+                # Do Some Stringijasdhjasldk heheh
+
+                if random() <= self.output_connection_string.get_strength():
                     self.output_neuron.do_action(output)
-                else: 
-                    # Do Some Stringijasdhjasldk heheh
 
-                    if random() <= self.output_connection_string.get_strength():
-                        self.output_neuron.do_action(output)
-
-                index += 1
+        # print(output)
+        
         
 class Cell:
     x = 0
@@ -402,26 +452,47 @@ class Cell:
     lifetime = 0
 
     gene = None
-
+    gene_chunks = None
+    
+    phermones_index = 0
+    
     _creation_time = 0
     _oscilator_count = 0 
+
+    type = ""
+    
     # gene_len = global __default_gene_length
     # DEFAULT VALUES
 
 
     DEFAULT_OSC_FREQUENCY = 5
 
-    def __init__(self,_x,_y,_lifetime,_color = (0,0,0) ):
+    def __init__(self,_x,_y,_lifetime, generated_gene,type = "CELL"):
+
         self.x = _x
         self.y = _y
+        self.type = type
         self.lifetime = _lifetime
         self._creation_time = time.time()
+
         
-        self.color = _color
         
-        self.gene = Gene(self,__default_gene_length)
+        # THIS WILL NOT RETURN AN ERROR
+        if type == "CELL":
+            
+            self.gene = Gene(self,__default_gene_length,generated_gene)
+
+            self.gene_chunks = self.gene.gene_chunks
+
+            self.color = self.gene.gene_color()
+
+            
+
 
         self.rect = pygame.Rect(self.x*grid_square_size,self.y*grid_square_size,grid_square_size,grid_square_size)
+
+
+
     
     def tick(self):
         # logging.critical("CELL GENE TICK STARTED")
@@ -432,8 +503,15 @@ class Cell:
     def draw_cell(self):
 
         self.rect = pygame.Rect(self.x*grid_square_size,self.y*grid_square_size,grid_square_size,grid_square_size)
+        
+        
+        # Update Pheromone AXIS
+        
+        
 
         grid[int(self.x)][int(self.y) ] = 1
+
+
       
       
         
@@ -444,6 +522,12 @@ class Cell:
     def move(self, flag ):
 
         old_rect = self.rect.copy()
+
+        phermones[(self.x,self.y)] = self.gene_chunks
+
+        old_x = self.x
+        old_y = self.y
+        
 
         match flag:
             case 1: 
@@ -512,9 +596,11 @@ class Cell:
                 self.rect.move_ip(1 * -grid_square_size,0)
                 self.x = (self.rect.x / grid_square_size) 
 
-                
+
+        phermones[(self.x,self.y)] = phermones.pop((old_x,old_y))
 
         screen.blit(bg,old_rect)
+
         self.draw_cell()
 
     def update_grid(self,x,y):
@@ -530,7 +616,8 @@ class Cell:
             # self.x  = 5
 
             self.birth_cell()
-            
+        
+        phermones[(self.x,self.y)] = self.gene_chunks
         return True
     
     # SENSORY NEURONS
@@ -621,25 +708,17 @@ class Cell:
             case 4:
                 self.neuro_motor_left()
 
-    def neuro_set_oscialltor_period(self,min,max):
-        self.DEFAULT_OSC_FREQUENCY = randint(min,max)
-
-
-
+    def neuro_set_oscialltor_period(self,flag = ""):
+        if flag != "":
+            self.DEFAULT_OSC_FREQUENCY += int(flag)
 
 def log(title = "", param = ""):
     if(title != ""):
         print("==================="+ title +"===================")
     print(param)
 
-
-
 def clamp(n, smallest, largest): 
     return sorted((smallest,n, largest))[1]
-
-
-
-
 
 # Initialize pygame
 pygame.init()
@@ -653,7 +732,7 @@ screen.fill("white")
 myfont = pygame.font.SysFont(None, 20)
 
 
-grid = createGrid(x_axis,y_axis,grid_square_size,screen)
+
 # BG for updation 
 bg = pygame.Surface((grid_square_size,grid_square_size))
 bg.fill((255,255,255))
@@ -661,11 +740,8 @@ rect = bg.get_rect()
 border_width = 5
 pygame.draw.rect(bg, (200, 204, 201),rect, 1)
 
-
-
-
 # Cells and Grids Public
-cells = grid
+
 cells = []
 gave_birth = 0
 
@@ -673,103 +749,301 @@ gave_birth = 0
 _time = 0
 
 
-# wall_x = 3
-# for wall_y in range(64):
-#     wall = Cell(wall_x,wall_y,(144,144,144))
 
-#     if(wall.birth_cell()):
-#         wall.draw_cell()
 
-def init(start_cells, generation_alive_time ):
+def init(start_cells, generation_alive_time, generation_genes = None ):
+    global __MUTATION_PERCENT
+    __MUTATION_PERCENT /= 100
+
+    global _time
+    _time = 0
+
+    global cells
+    cells = []
+
+    global grid
+    grid = []
+    grid = createGrid(x_axis,y_axis,grid_square_size,screen)
 
     # logging.info("Initalizing")
+    screen.fill("white")
+    increment_generation()
+    
+    global gave_birth
 
     gave_birth = 0
-    for x in range(start_cells):
 
+    starting = start_cells if generation_genes == None else len(generation_genes)
+
+    draw_walls()
+    
+    def generate_cell(x,_generation_genes): 
         selected_x = randint(0,(x_axis - 1))
         selected_y = randint(0,(y_axis - 1))
-        # logging.info("Creating Cell")
-        cell = Cell(selected_x,selected_y,generation_alive_time)
-        # logging.info("Cell Created")
+
+        if(x == -1):
+            has_gene = _generation_genes
+        else:
+            has_gene = None if _generation_genes == None else _generation_genes[x]
+
+        cell = Cell(selected_x,selected_y,generation_alive_time,has_gene)
 
         
-        
+
         if(cell.birth_cell()):
+
             cells.append(cell)
             cell.draw_cell()
+            global gave_birth
             gave_birth = gave_birth + 1 
+            pygame.display.flip()
 
-    # pygame.display.update()
+            
+    for x in range(starting):
+        generate_cell(x,generation_genes)
+
+    if(starting != start_cells):
+        
+        left_cells = start_cells - starting
+        _gen = len(generation_genes) - 1
+        for x in range(left_cells):
+            rnd = randint(0, _gen)
+            generate_cell(-1,generation_genes[rnd])
 
 
-    label = myfont.render("Total Cells: "+ str(gave_birth), 1, (0,0,0))
 
-    screen.blit(label, (700, 100))
+    
+    log("==================== GENERATION CREATED ===================")
+    
+    log("Cells: "+ str(gave_birth))
+
+
+
+
+  
 
     run = True
     clock = pygame.time.Clock()
     
+    global __TOTAL_ITERATIONS
+    TOTAL_ITERATIONS = __TOTAL_ITERATIONS
+
+    global __TICKS_PER_SECOND 
+    TICKS_PER_SECOND = __TICKS_PER_SECOND
+    
 
 
-    global _time
+    
+    
 
-    while run:
+    
+
+    while True:
+        create_survivable_area()
         pygame.event.get()
 
-        _time += clock.tick(10)
-        
-        # for e in pygame.event.get():
-        #     if e.type == pygame.QUIT:
-        #         run = False
-        # 8 ticks per second
+        if(TOTAL_ITERATIONS <= 0):
 
-        
-        if((_time / (generation_alive_time * 100)) > generation_alive_time):
+            if(run == False): continue
+            # Pause TICKKING GENERATION 
+            
             run = False
-        # print(_time / 800)
+            # RUN REPORT ONCE
+            create_survivable_area()
+
+            
+
+            survived_cells = [] 
+
+
+            for cell in cells:
+                # LEFT AND RIGHT
+                # if(cell.x < 20 or cell.x > (128-20)):
+                # BOTTOM HORIZONTAL
+                # if(cell.y >= 108):
+                # MIDDLE
+                # if(cell.y >= 58 and cell.y <=  78):
+                # LEFT VERTICAL 
+                if(cell.x < 20 ):
+                    survived_cells.append([
+                                cell.x,
+                                cell.y])
+
+            total_survived_cells = len(survived_cells)
+           
+
+            # 1. Create two arrays, "parent1_genes" and "parent2_genes", that represent the genes of the two parent cells.
+            # 2. Create an empty array, "offspring_genes", that will be used to store the genes of the offspring.
+            # 3. Use a loop to iterate through the genes of both parent arrays. 
+            # 4. For each iteration, randomly select a gene from either the "parent1_genes" or "parent2_genes" array and add it to the "offspring_genes" array.
+            # 5. Before adding the selected gene to the "offspring_genes" array, calculate a random number between 0 and 1. If this number is less than your desired mutation rate, change the selected gene to a random value.
+            # 6. Continue the loop until all genes from both parent arrays have been added to the "offspring_genes" array.
+            # 7. The "offspring_genes" array now contains the genes of the offspring, which is a combination of the genes from both parent cells with the possibility of mutations.
+            
+            # EACH CELL -> NEXT GEN GENES 
+            next_gen = []
+
+            total    = 0
+            defeated = 0 
+            found    = 0
+
+            # logging.critical(phermones.keys())
+            for male in survived_cells:
+                total += 1
+                male_gene = phermones[(male[0],male[1])]
+                fe_male_gene = get_rnd_adj(male[0],male[1],10)
+
+                if fe_male_gene == None:
+                    defeated += 1
+                else:
+                    found += 1
+                    next_gen.append(generate_offspring_gene(male_gene,fe_male_gene))
+                
+                
+                
+                
+
+                
+
+            log("Survived Cell: "+ str(total_survived_cells))
+            log("Mutations "+ str(MUTATION_COUNT))
+
+
+            # log("==RES==")
+            # log("Total => ",str(total))
+            # log("Defeated => ",str(defeated))
+            # log("Found => ",str(found))
+
+            # with open("GENERATION-BRAINS.json", 'w+', encoding='utf-8') as fw:
+            #     json.dump(next_gen, fw, ensure_ascii=False, indent=4)
+            
+
+            init(__start_cells,__time,next_gen)
+
+            
+        else:
+            # print(TOTAL_ITERATIONS)
+            # TICK
+            for cell in cells: 
+                cell.tick()
+            
+            pygame.display.flip()
+
+            clock.tick(TICKS_PER_SECOND)
+
+            TOTAL_ITERATIONS -= 1 
         
 
+
+
+
+def get_rnd_adj(x,y,depth = 10):
+    # print(depth)
+    if(depth <= 0):
+        return None
+
+    # x = int (x)
+    # y = int (y)
+    rnd = randint(0,3)
+    
+    match rnd:
+        case 0:
+            arr = (x, 0 if y - 1 == 0 else y - 1)
+        case 1: 
+            arr = ( (x_axis - 1) if x + 1 == x_axis else x + 1,y)
+        case 2:
+            arr = (x, (y_axis - 1) if y + 1 == y_axis else y + 1)
+        case 3:
+            arr = (0 if x-1 == 0 else x - 1,y)
+
+    # logging.debug(str(arr))
+
+    try:
+        return phermones[arr]
+    except KeyError:
+        depth -=1 
+        get_rnd_adj(x,y,depth) 
+
+    # if "a,a" not in phermones.keys():
+
+    #     depth -= 1
         
-        # TICK
-        # logging.critical("Tick Start")
-        i = 0
-        for cell in cells: 
+    #     get_rnd_adj(x,y,depth) 
 
-            # logging.critical("CELL => "+ str(i))
-            i += 1
-            # cell.tick()
-            cell.move(4)
-
-        
-        
-        
-        pygame.display.flip()
-
-    survived_cells = []
-    if(run == False):
-        for cell in cells:
-            if(cell.x < 20 or cell.x > 43):
-                survived_cells.append(cell)
-    
+    # else:
+    #     return phermones[arr]
         
 
-    log("==================== RESULT ===================")
-    log("Survived Cell: "+ str(len(survived_cells)))
-    print(survived_cells)
+
+def generate_offspring_gene(malegene,femalegene): 
+    # print("asd"+ str(malegene)+str(femalegene))
+    offspring_gene = []
+
+    # 10 GENE PER CELL 
+    for index in range(_Cell__default_gene_length):
+        
+        gene = []        
+        
+        for i in range(4):
+
+            _rnd = randint(0,1)
+            rnd = randint(0,_Cell__default_gene_length - 1 )  
+            
+            # Mutataion 
+            if random() < __MUTATION_PERCENT:
+                # MUTATES
+
+                global MUTATION_COUNT
+                MUTATION_COUNT += 1 
+
+                rnd_gene = randint(0,99)
+                gene.append(rnd_gene)
+                # print("mutates")
+
+            else:
+                if _rnd == 1:
+                    
+                    gene.append(malegene[rnd][randint(0,3)])
+
+                # FEMALE
+                else:
+                    
+                    gene.append(femalegene[rnd][randint(0,3)]) 
+
+        offspring_gene.append(gene)
+
+    return offspring_gene
+ 
+def draw_survivable_area(start_x,start_y,end_x,end_y):
+    
+    survivable_area = pygame.Rect(start_x * grid_square_size,start_y * grid_square_size,end_x * grid_square_size,end_y * grid_square_size)
+
+    pygame.draw.rect(screen, (34,139,34), survivable_area, 1)
+
+    pygame.display.flip()
+
+def draw_walls():
+    # pass
+    wall_x = 20
+    for wall_y in range(64):
+        
+        wall = Cell(wall_x,wall_y,10,None,"WALL")
+
+        if(wall.birth_cell()):
+            wall.draw_cell()
+
 
     
-
     
+def create_survivable_area():
+    # LEFT VERTICAL 
+    draw_survivable_area(0,0,20,128)
+    # RIGHT VERTICAL 
+    # draw_survivable_area(128 - 20,0,20,128)
+    # BOTTOM HORIZONTAL
+    # draw_survivable_area(0,128 - 20,128,20)
 
-
-
-
-    
-    
-    
-
-
+    # draw_survivable_area(0,58,128,20)
     
 
 
@@ -778,8 +1052,36 @@ def init(start_cells, generation_alive_time ):
 # Param 1 : Start Cells : Inital Cells 
 # Param 2 : Alive Time : Generation Lifetime in Seconds  -- TICKS = seconds * 8 
 
+# THESE VARIABLE ARE BEING USED DON"T REMOVE THEM 
+__start_cells = 2000
 
-__start_cells = 10
+__time = 20
+
+__GENERATION = 1 
+
+_Cell__default_gene_length = 30
+
+__TOTAL_ITERATIONS = 200  
+
+# IN PERCENT LIKE IF 20 then 20 / 100 = 0.2 chance
+
+__MUTATION_PERCENT = 1  
+
+MUTATION_COUNT   = 0
+# 10 seconds at 20 fps TOTAL FRAMES FOR EACH GENE
+
+__TICKS_PER_SECOND = 20
+def increment_generation():
+    global __GENERATION
+
+    label = myfont.render("GENERATION #: "+ str(__GENERATION), 1, (24,0,0))
+
+    screen.blit(label, (100, 650))
+
+    __GENERATION += 1 
+
+
+
 
 init(__start_cells,__time)
 

@@ -17,6 +17,7 @@ def createGrid(_x,_y,grid_square_size,screen):
 
 
     pygame.display.update()
+    
     return array
 
 
